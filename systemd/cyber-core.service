@@ -1,0 +1,17 @@
+[Unit]
+Description=Cyber Agent Core Service (FastAPI Gateway)
+After=network.target cyber-killswitch.service
+Wants=cyber-killswitch.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Cyber_Agent
+Environment=PYTHONPATH=%h/Cyber_Agent/src
+ExecStart=%h/Cyber_Agent/.venv/bin/python -m cyber_agent.main
+Restart=on-failure
+RestartSec=3s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

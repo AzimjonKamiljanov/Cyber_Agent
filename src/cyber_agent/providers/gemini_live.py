@@ -14,9 +14,11 @@ import numpy as np
 from google import genai
 from google.genai import types
 
+from cyber_agent.brain.orchestrator import Orchestrator, get_orchestrator
 from cyber_agent.config import Settings, get_settings
 from cyber_agent.providers.base import (
     AudioOutEvent,
+    ConfirmCardEvent,
     ErrorEvent,
     QuotaExhaustedError,
     SessionClosedError,
@@ -56,8 +58,13 @@ def is_quota_error(error: Exception) -> bool:
 class GeminiLiveProvider(VoiceProvider):
     """Voice provider connecting to Google Gemini 3.8 Live API."""
 
-    def __init__(self, settings: Settings | None = None) -> None:
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        orchestrator: Orchestrator | None = None,
+    ) -> None:
         self.settings = settings or get_settings()
+        self.orchestrator = orchestrator or get_orchestrator()
         self.model = self.settings.cyber_live_model or "gemini-3.8-live"
         self._client: genai.Client | None = None
         self._session_ctx: Any | None = None
@@ -91,6 +98,10 @@ class GeminiLiveProvider(VoiceProvider):
             else types.SessionResumptionConfig()
         )
 
+        tools_decl: list[Any] | None = (
+            self.orchestrator.build_gemini_declarations() if self.orchestrator else None
+        )
+
         return types.LiveConnectConfig(
             response_modalities=[types.Modality.AUDIO],
             system_instruction=UZBEK_PERSONA,
@@ -98,6 +109,7 @@ class GeminiLiveProvider(VoiceProvider):
             output_audio_transcription=types.AudioTranscriptionConfig(),
             session_resumption=resumption_config,
             context_window_compression=types.ContextWindowCompressionConfig(),
+            tools=tools_decl,
             # DO NOT set thinking_config or enable_affective_dialog for gemini-3.8-live
         )
 
@@ -235,6 +247,36 @@ class GeminiLiveProvider(VoiceProvider):
 
                         if sc.turn_complete:
                             self._awaiting_first_audio = False
+
+                    # 4. Process Model Tool Calls
+                    if msg.tool_call and msg.tool_call.function_calls:
+                        for call in msg.tool_call.function_calls:
+                            logger.info(
+                                "Received tool call from model: %s (id: %s)", call.name, call.id
+                            )
+                            resp = await self.orchestrator.handle_tool_call(
+                                name=call.name,
+                                args=call.args or {},
+                                call_id=call.id or "",
+                            )
+                            if resp.confirmation_card:
+                                await self._event_queue.put(
+                                    ConfirmCardEvent(card=resp.confirmation_card)
+                                )
+
+                            tool_resp = types.FunctionResponse(
+                                id=call.id,
+                                name=call.name,
+                                response={
+                                    "status": resp.status,
+                                    "spoken_message": resp.spoken_message,
+                                    **resp.data,
+                                },
+                            )
+                            if self._session:
+                                await self._session.send_tool_response(
+                                    function_responses=[tool_resp]
+                                )
 
                 if self._is_closed:
                     break

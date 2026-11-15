@@ -1,0 +1,16 @@
+[Unit]
+Description=Cyber Agent Out-of-Band Kill Switch Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Cyber_Agent
+Environment=PYTHONPATH=%h/Cyber_Agent/src
+ExecStart=%h/Cyber_Agent/.venv/bin/python -m cyber_agent.killswitch.service
+Restart=always
+RestartSec=1s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

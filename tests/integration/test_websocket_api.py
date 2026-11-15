@@ -116,3 +116,36 @@ def test_barge_in_and_stop() -> None:
         status4 = json.loads(ws.receive_text())
         assert status4["type"] == "status"
         assert status4["state"] == "Idle"
+
+
+def test_websocket_confirm_response_flow() -> None:
+    from cyber_agent.brain.orchestrator import get_orchestrator
+
+    mock_settings = Settings(CYBER_PAIRING_TOKEN="test-pair-token")
+    orchestrator = get_orchestrator()
+    # Create a pending confirmation
+    action_id, token = orchestrator.confirmation_store.create_confirmation(
+        "write_workspace_file",
+        {"filename": "ws_test.txt", "content": "from ws"},
+    )
+
+    with mock.patch("cyber_agent.api.websocket.get_settings", return_value=mock_settings):
+        client = TestClient(app)
+        with client.websocket_connect("/ws/voice?token=test-pair-token") as ws:
+            # Drain initial connected message from mock provider
+            init_msg = json.loads(ws.receive_text())
+            assert init_msg["type"] == "status"
+
+            # Cancel confirmation
+            ws.send_text(
+                json.dumps({
+                    "type": "confirm_response",
+                    "action_id": action_id,
+                    "token": token,
+                    "approved": False,
+                })
+            )
+            msg = json.loads(ws.receive_text())
+            assert msg["type"] == "status"
+            assert "bekor qilindi" in msg["details"]
+

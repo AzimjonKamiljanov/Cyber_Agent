@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
+from typing import Any
 
 
 class VoiceProviderError(Exception):
@@ -63,7 +64,12 @@ class ErrorEvent:
     retryable: bool = False
 
 
-VoiceEvent = AudioOutEvent | TranscriptInEvent | TranscriptOutEvent | StatusEvent | ErrorEvent
+@dataclass(frozen=True)
+class ConfirmCardEvent:
+    card: dict[str, Any]
+
+
+VoiceEvent = AudioOutEvent | TranscriptInEvent | TranscriptOutEvent | StatusEvent | ErrorEvent | ConfirmCardEvent
 
 
 class VoiceProvider(ABC):

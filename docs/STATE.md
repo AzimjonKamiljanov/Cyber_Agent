@@ -5,10 +5,10 @@ Live tracking of active stages, decisions, and system verification status.
 ---
 
 ## Current Status
-- **Current Stage:** Stage S1 — Voice Core
-- **Status:** Completed (Awaiting Owner Gate Approval G1)
-- **Active Branch:** `stage/s1-voice-core`
-- **Next Gate:** Gate G1 (5-minute Uzbek conversation from phone+FreeArc; echo/PTT verdict; LiveKit decision recorded)
+- **Current Stage:** Stage S2 — Safety Kernel, Tools v1 & MVP
+- **Status:** Completed (Awaiting Owner Gate Approval G2)
+- **Active Branch:** `stage/s2-safety-tools`
+- **Next Gate:** Gate G2 (MVP Gate: Safety kernel, 10 tools, Kill switch <= 1s, 10/10 security red team blocked, 100-sentence benchmark)
 
 ---
 
@@ -16,8 +16,8 @@ Live tracking of active stages, decisions, and system verification status.
 | Stage | Name | Status | Gate Passed | Report |
 |---|---|---|---|---|
 | **S0** | Constitution & Workspace Bootstrap | Completed | Passed G0 | `docs/reports/stage-0-report.uz.md` |
-| **S1** | Voice Core | Completed | Pending G1 Approval | `docs/reports/stage-1-report.uz.md` |
-| **S2** | Safety Kernel & Tools v1 (MVP) | Planned | Pending G2 | — |
+| **S1** | Voice Core | Completed | Passed G1 | `docs/reports/stage-1-report.uz.md` |
+| **S2** | Safety Kernel & Tools v1 (MVP) | Completed | Pending G2 Approval | `docs/reports/stage-2-report.uz.md` |
 | **S3** | Local Brain & Uzbek Voice | Planned | Pending G3 | — |
 | **S4** | Laptop Control (Wayland) | Planned | Pending G4 | — |
 | **S5** | Second Brain & Calendar | Planned | Pending G5 | — |

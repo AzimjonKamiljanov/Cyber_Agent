@@ -58,6 +58,35 @@
         <button id="resume-btn" class="btn btn-primary" style="display: none;">Davom ettirish</button>
       </div>
     </section>
+
+    <!-- Confirmation Modal Card (YELLOW tier actions) -->
+    <div id="confirm-modal" class="modal" style="display: none;">
+      <div class="modal-content card">
+        <div class="modal-header">
+          <h3 id="modal-title">⚠️ Amalni tasdiqlash</h3>
+          <span id="modal-timer-badge" class="badge badge-thinking">60s</span>
+        </div>
+        <div id="modal-taint-banner" class="taint-banner" style="display: none;">
+          ⚠️ DIQQAT: Sessiya tashqi veb-manba tufayli zararlangan!
+        </div>
+        <div class="modal-body">
+          <div class="modal-field"><b>Amal:</b> <span id="modal-action"></span></div>
+          <div class="modal-field"><b>Nishon (Target):</b> <span id="modal-target"></span></div>
+          <div class="modal-field"><b>Qaytarilish:</b> <span id="modal-reversibility"></span></div>
+          <div class="modal-args">
+            <b>Parametrlar:</b>
+            <pre id="modal-changes"></pre>
+          </div>
+        </div>
+        <div class="progress-bar-container">
+          <div id="modal-countdown-bar" class="progress-bar"></div>
+        </div>
+        <div class="modal-actions">
+          <button id="modal-cancel-btn" class="btn btn-secondary">Bekor qilish</button>
+          <button id="modal-confirm-btn" class="btn btn-primary">Tasdiqlash</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="/app.js"></script>

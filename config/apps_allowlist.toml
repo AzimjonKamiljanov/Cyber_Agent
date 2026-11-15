@@ -1,0 +1,7 @@
+# Applications allowed to be launched by Cyber Agent (GREEN tier)
+[apps]
+firefox = { name = "Firefox", command = ["firefox"], description = "Firefox Web Browser" }
+ghostty = { name = "Ghostty", command = ["ghostty"], description = "Ghostty Terminal Emulator" }
+obsidian = { name = "Obsidian", command = ["obsidian"], description = "Obsidian Second Brain" }
+code = { name = "VS Code", command = ["code"], description = "Visual Studio Code" }
+calculator = { name = "Calculator", command = ["gnome-calculator"], description = "GNOME Calculator" }

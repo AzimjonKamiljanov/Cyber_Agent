@@ -11,9 +11,11 @@ from urllib.parse import parse_qs
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
 
+from cyber_agent.brain.orchestrator import get_orchestrator
 from cyber_agent.config import Settings, get_settings
 from cyber_agent.providers.base import (
     AudioOutEvent,
+    ConfirmCardEvent,
     ErrorEvent,
     QuotaExhaustedError,
     SessionClosedError,
@@ -144,6 +146,13 @@ async def voice_websocket_endpoint(websocket: WebSocket) -> None:
                             "details": event.details,
                         })
                     )
+                elif isinstance(event, ConfirmCardEvent):
+                    await websocket.send_text(
+                        json.dumps({
+                            "type": "confirm_card",
+                            "card": event.card,
+                        })
+                    )
                 elif isinstance(event, ErrorEvent):
                     await websocket.send_text(
                         json.dumps({
@@ -216,6 +225,46 @@ async def voice_websocket_endpoint(websocket: WebSocket) -> None:
                 elif ctrl_type == "resume":
                     is_stopped = False
                     await websocket.send_text(json.dumps({"type": "status", "state": "Idle"}))
+
+                elif ctrl_type == "confirm_response":
+                    action_id = str(payload.get("action_id", ""))
+                    token = str(payload.get("token", ""))
+                    approved = bool(payload.get("approved", False))
+                    orchestrator = get_orchestrator()
+
+                    if not approved:
+                        orchestrator.confirmation_store.invalidate_confirmation(action_id)
+                        await websocket.send_text(
+                            json.dumps({
+                                "type": "status",
+                                "state": "Idle",
+                                "details": "Amal bekor qilindi.",
+                            })
+                        )
+                    else:
+                        conf = orchestrator.confirmation_store.get_confirmation(action_id)
+                        if conf:
+                            resp = await orchestrator.handle_tool_call(
+                                name=conf["tool_name"],
+                                args=conf["args"],
+                                action_id=action_id,
+                                confirmation_token=token,
+                            )
+                            await websocket.send_text(
+                                json.dumps({
+                                    "type": "transcript_out",
+                                    "text": resp.spoken_message,
+                                    "is_final": True,
+                                })
+                            )
+                        else:
+                            await websocket.send_text(
+                                json.dumps({
+                                    "type": "error",
+                                    "code": "CONFIRM_NOT_FOUND",
+                                    "message": "Tasdiqlash so'rovi topilmadi yoki muddati o'tgan.",
+                                })
+                            )
 
     except WebSocketDisconnect:
         pass

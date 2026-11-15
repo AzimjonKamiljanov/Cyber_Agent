@@ -55,6 +55,16 @@
   - Attributes: `new_handle: str`, `resumable: bool`, `last_consumed_client_message_index: int`.
   - Stored in memory as the latest resumption handle.
 
+### 1.5 Function Calling & Non-blocking Behavior
+- **Tool Declaration:**
+  `types.LiveConnectConfig(tools=[types.Tool(function_declarations=[...])])`
+- **Function Declaration:**
+  `types.FunctionDeclaration(name=..., description=..., parameters_json_schema=..., behavior=types.Behavior.NON_BLOCKING)`
+- **Server Tool Calls:**
+  Received via `msg.tool_call.function_calls: list[types.FunctionCall]` where each item has `.id`, `.name`, `.args`.
+- **Client Tool Responses:**
+  Sent via `await session.send_tool_response(function_responses=[types.FunctionResponse(id=..., name=..., response=...)])`.
+
 ---
 
 ## 2. Differences from Appendix B

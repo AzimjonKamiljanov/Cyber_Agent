@@ -200,6 +200,8 @@ function connectWebSocket() {
         appendTranscript("user", msg.text, msg.is_final);
       } else if (msg.type === "transcript_out") {
         appendTranscript("agent", msg.text, msg.is_final);
+      } else if (msg.type === "confirm_card") {
+        showConfirmModal(msg.card);
       } else if (msg.type === "status") {
         updateStatus(msg.state);
       } else if (msg.type === "error") {
@@ -287,6 +289,81 @@ stopBtn.addEventListener("click", () => {
     ws.send(JSON.stringify({ type: "stop" }));
   }
 });
+
+// Confirmation Modal Elements
+const confirmModal = document.getElementById("confirm-modal");
+const modalTimerBadge = document.getElementById("modal-timer-badge");
+const modalTaintBanner = document.getElementById("modal-taint-banner");
+const modalAction = document.getElementById("modal-action");
+const modalTarget = document.getElementById("modal-target");
+const modalReversibility = document.getElementById("modal-reversibility");
+const modalChanges = document.getElementById("modal-changes");
+const modalCountdownBar = document.getElementById("modal-countdown-bar");
+const modalCancelBtn = document.getElementById("modal-cancel-btn");
+const modalConfirmBtn = document.getElementById("modal-confirm-btn");
+
+let activeCard = null;
+let confirmCountdownInterval = null;
+
+function showConfirmModal(card) {
+  activeCard = card;
+  modalAction.textContent = card.action;
+  modalTarget.textContent = card.target;
+  modalReversibility.textContent = card.reversibility;
+  modalChanges.textContent = JSON.stringify(card.args, null, 2);
+
+  if (card.is_tainted) {
+    modalTaintBanner.style.display = "block";
+    modalTaintBanner.textContent = card.taint_warning || "DIQQAT: Sessiya tashqi veb-manba tufayli zararlangan!";
+  } else {
+    modalTaintBanner.style.display = "none";
+  }
+
+  confirmModal.style.display = "flex";
+
+  // Countdown timer (default 60s)
+  let secondsRemaining = card.expires_in_seconds || 60;
+  const totalSeconds = secondsRemaining;
+  modalTimerBadge.textContent = `${secondsRemaining}s`;
+  modalCountdownBar.style.width = "100%";
+
+  if (confirmCountdownInterval) clearInterval(confirmCountdownInterval);
+
+  confirmCountdownInterval = setInterval(() => {
+    secondsRemaining -= 1;
+    modalTimerBadge.textContent = `${secondsRemaining}s`;
+    const pct = Math.max(0, (secondsRemaining / totalSeconds) * 100);
+    modalCountdownBar.style.width = `${pct}%`;
+
+    if (secondsRemaining <= 0) {
+      clearInterval(confirmCountdownInterval);
+      handleConfirmResponse(false);
+    }
+  }, 1000);
+}
+
+function handleConfirmResponse(approved) {
+  if (confirmCountdownInterval) {
+    clearInterval(confirmCountdownInterval);
+    confirmCountdownInterval = null;
+  }
+  confirmModal.style.display = "none";
+
+  if (activeCard && ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(
+      JSON.stringify({
+        type: "confirm_response",
+        action_id: activeCard.action_id,
+        token: activeCard.token,
+        approved: approved,
+      })
+    );
+  }
+  activeCard = null;
+}
+
+modalConfirmBtn.addEventListener("click", () => handleConfirmResponse(true));
+modalCancelBtn.addEventListener("click", () => handleConfirmResponse(false));
 
 resumeBtn.addEventListener("click", () => {
   isStopped = false;
