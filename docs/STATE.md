@@ -5,10 +5,10 @@ Live tracking of active stages, decisions, and system verification status.
 ---
 
 ## Current Status
-- **Current Stage:** Stage S2 — Safety Kernel, Tools v1 & MVP
-- **Status:** Completed (Awaiting Owner Gate Approval G2)
-- **Active Branch:** `stage/s2-safety-tools`
-- **Next Gate:** Gate G2 (MVP Gate: Safety kernel, 10 tools, Kill switch <= 1s, 10/10 security red team blocked, 100-sentence benchmark)
+- **Current Stage:** Stage S3 — Local Uzbek Voice & Router (Tier T3 "Local Brain")
+- **Status:** Completed (Awaiting Owner Gate Approval G3)
+- **Active Branch:** `stage/s3-local-voice`
+- **Next Gate:** Gate G3 (Benchmark table, offline demo, auto-fallback, Privacy Mode, VRAM <= 8 GB)
 
 ---
 
@@ -17,8 +17,8 @@ Live tracking of active stages, decisions, and system verification status.
 |---|---|---|---|---|
 | **S0** | Constitution & Workspace Bootstrap | Completed | Passed G0 | `docs/reports/stage-0-report.uz.md` |
 | **S1** | Voice Core | Completed | Passed G1 | `docs/reports/stage-1-report.uz.md` |
-| **S2** | Safety Kernel & Tools v1 (MVP) | Completed | Pending G2 Approval | `docs/reports/stage-2-report.uz.md` |
-| **S3** | Local Brain & Uzbek Voice | Planned | Pending G3 | — |
+| **S2** | Safety Kernel & Tools v1 (MVP) | Completed | Passed G2 (Merged to main) | `docs/reports/stage-2-report.uz.md` |
+| **S3** | Local Brain & Uzbek Voice | Completed | Pending G3 Approval | `docs/reports/stage-3-report.uz.md` |
 | **S4** | Laptop Control (Wayland) | Planned | Pending G4 | — |
 | **S5** | Second Brain & Calendar | Planned | Pending G5 | — |
 | **S6** | Hardening & v1.0 Release | Planned | Pending G6 | — |

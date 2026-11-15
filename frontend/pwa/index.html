@@ -12,8 +12,27 @@
   <div class="container">
     <header class="header">
       <h1>Cyber Agent</h1>
-      <div id="status-badge" class="badge badge-idle">Kutilmoqda</div>
+      <div class="header-badges">
+        <div id="mode-badge" class="badge badge-mode">Mode A (Live)</div>
+        <div id="status-badge" class="badge badge-idle">Kutilmoqda</div>
+      </div>
     </header>
+
+    <!-- Mode Selector & Privacy Mode Card -->
+    <section class="card mode-card">
+      <div class="mode-row">
+        <label for="mode-select"><b>Rejim:</b></label>
+        <select id="mode-select" class="mode-select">
+          <option value="A">Mode A (Live — Gemini 3.8)</option>
+          <option value="B">Mode B (Cascade — STT + LLM + TTS)</option>
+          <option value="C">Mode C (Local — Offline Whisper/Ollama)</option>
+        </select>
+        <label class="privacy-toggle-label">
+          <input type="checkbox" id="privacy-toggle-cb">
+          <span class="privacy-text">🔒 Maxfiylik (Privacy)</span>
+        </label>
+      </div>
+    </section>
 
     <!-- Token Configuration Card -->
     <section class="card auth-card">

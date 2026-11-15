@@ -24,6 +24,9 @@ let isPlaying = false;
 let currentSourceNode = null;
 
 const statusBadge = document.getElementById("status-badge");
+const modeBadge = document.getElementById("mode-badge");
+const modeSelect = document.getElementById("mode-select");
+const privacyToggleCb = document.getElementById("privacy-toggle-cb");
 const tokenInput = document.getElementById("pairing-token");
 const saveTokenBtn = document.getElementById("save-token-btn");
 const pttBtn = document.getElementById("ptt-btn");
@@ -40,6 +43,48 @@ const diagRate = document.getElementById("diag-rate");
 // Load stored token
 const storedToken = localStorage.getItem("cyber_pairing_token") || "";
 tokenInput.value = storedToken;
+
+function updateModeUI(mode, privacyMode) {
+  if (!modeBadge) return;
+  if (privacyMode) {
+    modeBadge.className = "badge badge-privacy";
+    modeBadge.textContent = "🔒 Privacy (Local)";
+    if (privacyToggleCb) privacyToggleCb.checked = true;
+    if (modeSelect) {
+      modeSelect.value = "C";
+      modeSelect.disabled = true;
+    }
+  } else {
+    modeBadge.className = "badge badge-mode";
+    const modeLabels = {
+      A: "Mode A (Live)",
+      B: "Mode B (Cascade)",
+      C: "Mode C (Local)",
+    };
+    modeBadge.textContent = modeLabels[mode] || `Mode ${mode}`;
+    if (privacyToggleCb) privacyToggleCb.checked = false;
+    if (modeSelect) {
+      modeSelect.value = mode;
+      modeSelect.disabled = false;
+    }
+  }
+}
+
+if (modeSelect) {
+  modeSelect.addEventListener("change", () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "set_mode", mode: modeSelect.value }));
+    }
+  });
+}
+
+if (privacyToggleCb) {
+  privacyToggleCb.addEventListener("change", () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "set_privacy_mode", enabled: privacyToggleCb.checked }));
+    }
+  });
+}
 
 function updateStatus(state) {
   statusBadge.className = `badge badge-${state.toLowerCase()}`;
@@ -196,7 +241,9 @@ function connectWebSocket() {
   ws.onmessage = (event) => {
     if (typeof event.data === "string") {
       const msg = JSON.parse(event.data);
-      if (msg.type === "transcript_in") {
+      if (msg.type === "mode_status") {
+        updateModeUI(msg.mode, msg.privacy_mode);
+      } else if (msg.type === "transcript_in") {
         appendTranscript("user", msg.text, msg.is_final);
       } else if (msg.type === "transcript_out") {
         appendTranscript("agent", msg.text, msg.is_final);

@@ -61,11 +61,65 @@ body {
   text-transform: uppercase;
 }
 
+.header-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.badge-mode {
+  background: #1f6feb;
+  color: #fff;
+  border: 1px solid #388bfd;
+}
+
+.badge-privacy {
+  background: #a371f7;
+  color: #fff;
+  border: 1px solid #bc8cff;
+}
+
 .badge-idle { background: #30363d; color: #8b949e; }
 .badge-listening { background: var(--accent-green); color: #fff; }
 .badge-thinking { background: #d29922; color: #fff; }
 .badge-speaking { background: var(--accent-blue); color: #fff; }
 .badge-stopped { background: var(--accent-red); color: #fff; }
+
+.mode-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+
+.mode-select {
+  flex: 1;
+  background: #0d1117;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: #fff;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+}
+
+.privacy-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.privacy-toggle-label input {
+  cursor: pointer;
+}
+
+.privacy-text {
+  font-size: 0.8rem;
+  color: #d2a8ff;
+  font-weight: 600;
+}
 
 .card {
   background: var(--card-bg);

@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     cyber_workspace_dir: Path = Field(
         default=Path("~/cyber-workspace"), alias="CYBER_WORKSPACE_DIR"
     )
+    cyber_mode: str = Field(default="A", alias="CYBER_MODE")
+    cyber_stt_model: str = Field(default="Mannon/whisper-medium-uzbek", alias="CYBER_STT_MODEL")
+    cyber_stt_device: str = Field(default="cuda", alias="CYBER_STT_DEVICE")
+    cyber_stt_compute_type: str = Field(default="float16", alias="CYBER_STT_COMPUTE_TYPE")
+    cyber_ollama_url: str = Field(default="http://127.0.0.1:11434", alias="CYBER_OLLAMA_URL")
+    cyber_ollama_model: str = Field(default="qwen2.5:7b-instruct-q4_K_M", alias="CYBER_OLLAMA_MODEL")
+    cyber_tts_provider: str = Field(default="edge", alias="CYBER_TTS_PROVIDER")
+    cyber_edge_tts_voice: str = Field(default="uz-UZ-SardorNeural", alias="CYBER_EDGE_TTS_VOICE")
 
     def __repr__(self) -> str:
         masked_api = "***" if self.gemini_api_key else ""

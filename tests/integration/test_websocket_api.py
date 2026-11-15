@@ -1,21 +1,25 @@
-"""Integration tests for WebSocket Gateway and HTTP API."""
+"""Integration tests for WebSocket Gateway, HTTP API, and Mode Routing."""
 
 import json
+from pathlib import Path
 from unittest import mock
 
 import pytest
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
+from cyber_agent.brain.model_router import AssistantMode, ModelRouter
 from cyber_agent.config import Settings
 from cyber_agent.main import app
 from cyber_agent.providers.mock_live import MockLiveProvider
 
 
 @pytest.fixture(autouse=True)
-def _setup_app_provider() -> None:
-    # Use fresh MockLiveProvider for tests
+def _setup_app_provider(tmp_path: Path) -> None:
+    # Use fresh MockLiveProvider and router with isolated sqlite
     app.state.voice_provider = MockLiveProvider()
+    db_file = tmp_path / "test_settings.sqlite3"
+    app.state.model_router = ModelRouter(initial_mode=AssistantMode.A_LIVE, privacy_mode=False, db_path=db_file)
 
 
 def test_healthz() -> None:
@@ -60,12 +64,17 @@ def test_audio_streaming_and_transcripts() -> None:
     client = TestClient(app)
 
     with client.websocket_connect("/ws/voice?token=") as ws:
-        # Receive initial Connected status event
+        # 1. First message is mode_status
+        mode_msg = json.loads(ws.receive_text())
+        assert mode_msg["type"] == "mode_status"
+        assert mode_msg["mode"] == "A"
+
+        # 2. Receive initial Connected status event
         initial_msg = json.loads(ws.receive_text())
         assert initial_msg["type"] == "status"
         assert initial_msg["state"] == "Connected"
 
-        # Send binary audio chunk (16 kHz PCM16 mono)
+        # 3. Send binary audio chunk (16 kHz PCM16 mono)
         ws.send_bytes(b"\x00\x00" * 320)
 
         # Receive transcript_in
@@ -88,8 +97,11 @@ def test_barge_in_and_stop() -> None:
     client = TestClient(app)
 
     with client.websocket_connect("/ws/voice?token=") as ws:
-        # Consume initial Connected status
-        _ = ws.receive_text()
+        # Consume initial mode_status and Connected status
+        m1 = json.loads(ws.receive_text())
+        assert m1["type"] == "mode_status"
+        m2 = json.loads(ws.receive_text())
+        assert m2["type"] == "status"
 
         # Send ptt_start (triggers barge-in / interrupt)
         ws.send_text(json.dumps({"type": "ptt_start"}))
@@ -132,7 +144,9 @@ def test_websocket_confirm_response_flow() -> None:
     with mock.patch("cyber_agent.api.websocket.get_settings", return_value=mock_settings):
         client = TestClient(app)
         with client.websocket_connect("/ws/voice?token=test-pair-token") as ws:
-            # Drain initial connected message from mock provider
+            # Drain initial mode_status and connected messages
+            mode_msg = json.loads(ws.receive_text())
+            assert mode_msg["type"] == "mode_status"
             init_msg = json.loads(ws.receive_text())
             assert init_msg["type"] == "status"
 
@@ -149,3 +163,36 @@ def test_websocket_confirm_response_flow() -> None:
             assert msg["type"] == "status"
             assert "bekor qilindi" in msg["details"]
 
+
+def test_websocket_mode_switching_and_privacy() -> None:
+    client = TestClient(app)
+    with client.websocket_connect("/ws/voice?token=") as ws:
+        # Initial mode status
+        m = json.loads(ws.receive_text())
+        assert m["type"] == "mode_status"
+        assert m["mode"] == "A"
+
+        _ = json.loads(ws.receive_text())  # Connected
+
+        # Query get_mode
+        ws.send_text(json.dumps({"type": "get_mode"}))
+        res = json.loads(ws.receive_text())
+        assert res["type"] == "mode_status"
+        assert res["mode"] == "A"
+
+        # Switch to Mode B
+        ws.send_text(json.dumps({"type": "set_mode", "mode": "B"}))
+        m_b = json.loads(ws.receive_text())
+        assert m_b["type"] == "mode_status"
+        assert m_b["mode"] == "B"
+        st = json.loads(ws.receive_text())
+        assert "Mode B" in st["details"]
+
+        # Engage Privacy Mode
+        ws.send_text(json.dumps({"type": "set_privacy_mode", "enabled": True}))
+        m_p = json.loads(ws.receive_text())
+        assert m_p["type"] == "mode_status"
+        assert m_p["privacy_mode"] is True
+        assert m_p["mode"] == "C"
+        st_p = json.loads(ws.receive_text())
+        assert "Maxfiylik" in st_p["details"]
