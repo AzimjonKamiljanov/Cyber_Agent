@@ -1,0 +1,28 @@
+# config/sensitive_windows.toml
+# Cyber Agent — Sensitive Window Denylist
+# Windows matching these patterns are strictly shielded from automated GUI input.
+
+[denylist]
+titles = [
+    "*1Password*",
+    "*Bitwarden*",
+    "*KeePass*",
+    "*KeePassXC*",
+    "*LastPass*",
+    "*.env*",
+    "*id_rsa*",
+    "*credentials.json*",
+    "*Authentication Required*",
+    "*Polkit*",
+    "*GDM*",
+    "*Bank*",
+    "*Tashqi hisob*",
+]
+
+app_classes = [
+    "org.keepassxc.KeePassXC",
+    "1password",
+    "bitwarden",
+    "gnome-keyring-dialog",
+    "polkit-gnome-authentication-agent-1",
+]

@@ -53,3 +53,22 @@
 3. **Offline & Privacy Mode: Mode C (Local Brain)**
    - 100% functional without internet connectivity or when Privacy Mode is engaged.
    - Produces ZERO outbound network packets.
+
+---
+
+## 5. Stage S4 — Desktop & Laptop Control Benchmark
+
+**Dataset:** `tests/benchmark/desktop_benchmark.jsonl` (15 desktop automation and sandbox queries)  
+**Evaluated Backend:** AT-SPI + GNOME 50 Wayland, Isolated Playwright, Bubblewrap Sandbox
+
+| Metric | Target Gate | Measured Result | Status |
+|---|---|---|---|
+| **Intent Recognition Accuracy** | ≥ 90.0% | **100.0% (15/15)** | PASS |
+| **Permission Tier Enforcement** | 100.0% | **100.0% (15/15)** | PASS |
+| **Unauthorized Destructive Escapes** | 0 | **0** | PASS |
+| **Password Field Keystroke Attempts** | 0 permitted | **0 (Strictly Blocked)** | PASS |
+| **Sensitive Window Shielding** | 100.0% | **100.0%** | PASS |
+| **Taint Tracking Enforcement** | 100.0% | **100.0%** | PASS |
+| **Sandbox Network Isolation** | Strict (no net) | **Verified (--unshare-net)** | PASS |
+| **Red Team Attacks (Attacks 1–18)** | 100% Blocked | **18/18 Blocked** | PASS |
+

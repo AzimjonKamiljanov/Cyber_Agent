@@ -70,6 +70,52 @@ class RunTestSuiteArgs(MutatingToolArgs):
     test_path: str = Field(default="", description="Specific test file or directory inside workspace")
 
 
+# --- Stage S4 Desktop & Sandbox Schemas ---
+
+class WindowListArgs(BaseToolArgs):
+    include_sensitive: bool = Field(default=False, description="Whether to include masked sensitive windows")
+
+
+class WindowFocusArgs(BaseToolArgs):
+    target: str = Field(..., description="Window title, ID, or application name to focus")
+
+
+class ReadUITreeArgs(BaseToolArgs):
+    window_title: str | None = Field(default=None, description="Optional target window title")
+    max_depth: int = Field(default=3, ge=1, le=10, description="Max depth of accessibility tree")
+
+
+class GUIClickArgs(MutatingToolArgs):
+    x: int = Field(..., ge=0, description="Horizontal coordinate")
+    y: int = Field(..., ge=0, description="Vertical coordinate")
+    monitor: str = Field(default="primary", description="'primary' or 'secondary'")
+    target_window: str = Field(default="", description="Expected active window title for safety check")
+
+
+class GUITypeArgs(MutatingToolArgs):
+    text: str = Field(..., max_length=5000, description="Text string to type")
+    target_window: str = Field(default="", description="Expected active window title")
+    target_element_role: str = Field(default="", description="Accessibility role of target field")
+    target_element_name: str = Field(default="", description="Accessibility label of target field")
+
+
+class BrowserOpenArgs(BaseToolArgs):
+    url: str = Field(..., description="Web URL to open in isolated Playwright profile")
+
+
+class BrowserReadArgs(BaseToolArgs):
+    max_chars: int = Field(default=4000, ge=100, le=20000, description="Maximum characters to read")
+
+
+class BrowserSubmitFormArgs(MutatingToolArgs):
+    form_selector: str = Field(..., description="CSS selector of the form to submit")
+    fields: dict[str, str] = Field(..., description="Key-value dictionary of form input fields")
+
+
+class RunAllowedCommandArgs(MutatingToolArgs):
+    argv: list[str] = Field(..., min_length=1, description="Command arguments array (argv)")
+
+
 class ToolResult(BaseModel):
     success: bool
     output: str

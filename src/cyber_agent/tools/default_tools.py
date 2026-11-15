@@ -1,12 +1,15 @@
 """Registration of all S2 default safe tools."""
 
 from cyber_agent.policy.permissions import PolicyTier
+from cyber_agent.tools.browser.tools import register_browser_tools
+from cyber_agent.tools.desktop.tools import register_desktop_tools
 from cyber_agent.tools.draft_message import handle_draft_message
 from cyber_agent.tools.get_local_time import handle_get_local_time
 from cyber_agent.tools.get_system_status import handle_get_system_status
 from cyber_agent.tools.move_workspace_file import handle_move_workspace_file
 from cyber_agent.tools.open_allowed_app import handle_open_allowed_app
 from cyber_agent.tools.registry import ToolDefinition, ToolRegistry, get_tool_registry
+from cyber_agent.tools.run_allowed_command import handle_run_allowed_command
 from cyber_agent.tools.run_test_suite import handle_run_test_suite
 from cyber_agent.tools.schemas import (
     CreateTimerArgs,
@@ -16,6 +19,7 @@ from cyber_agent.tools.schemas import (
     ListTimersArgs,
     MoveWorkspaceFileArgs,
     OpenAllowedAppArgs,
+    RunAllowedCommandArgs,
     RunTestSuiteArgs,
     SearchWorkspaceArgs,
     SetVolumeArgs,
@@ -153,5 +157,21 @@ def register_default_tools(registry: ToolRegistry | None = None) -> ToolRegistry
             handler=handle_run_test_suite,
         )
     )
+
+    reg.register(
+        ToolDefinition(
+            name="run_allowed_command",
+            description="Ruxsat etilgan buyruqlarni (git, ls, pwd, pytest) tarmoqsiz bubblewrap qumdonida bajarish (YELLOW tier).",
+            tier=PolicyTier.YELLOW,
+            args_schema=RunAllowedCommandArgs,
+            handler=handle_run_allowed_command,
+        )
+    )
+
+    # Register Desktop tools (window_list, window_focus, read_ui_tree, gui_click, gui_type)
+    register_desktop_tools(reg)
+
+    # Register Browser tools (browser_open, browser_read, browser_submit_form)
+    register_browser_tools(reg)
 
     return reg

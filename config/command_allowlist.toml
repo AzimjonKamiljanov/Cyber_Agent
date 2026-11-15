@@ -1,0 +1,13 @@
+# Allowlist of commands permitted for run_allowed_command tool
+# Only exact argv prefixes defined here are permitted inside rootless bubblewrap sandbox.
+# The user (owner) edits and maintains this file.
+
+[allowed_commands]
+commands = [
+  ["git", "status"],
+  ["git", "diff"],
+  ["git", "log"],
+  ["ls"],
+  ["pwd"],
+  ["uv", "run", "pytest"],
+]
