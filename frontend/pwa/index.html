@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cyber Agent — Shaxsiy Ovozli Yordamchi</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Cyber Agent</h1>
+      <div id="status-badge" class="badge badge-idle">Kutilmoqda</div>
+    </header>
+
+    <!-- Token Configuration Card -->
+    <section class="card auth-card">
+      <label for="pairing-token">Ulanish kaliti (Pairing Token):</label>
+      <div class="token-row">
+        <input type="password" id="pairing-token" placeholder="Tokenni kiriting..." autocomplete="off">
+        <button id="save-token-btn" class="btn btn-secondary">Saqlash</button>
+      </div>
+    </section>
+
+    <!-- Audio Hardware Diagnostics Card -->
+    <section class="card diag-card">
+      <h3>Mikrofon sozlamalari (getSettings)</h3>
+      <div class="diag-grid">
+        <div><span>Echo Cancellation:</span> <b id="diag-echo">N/A</b></div>
+        <div><span>Noise Suppression:</span> <b id="diag-noise">N/A</b></div>
+        <div><span>Auto Gain Control:</span> <b id="diag-agc">N/A</b></div>
+        <div><span>Sample Rate:</span> <b id="diag-rate">N/A</b></div>
+      </div>
+    </section>
+
+    <!-- Live Transcript Container -->
+    <section class="card transcript-card">
+      <div class="transcript-header">
+        <h3>Jonli suhbat</h3>
+        <button id="clear-transcript-btn" class="btn btn-link">Tozalash</button>
+      </div>
+      <div id="transcript-list" class="transcript-list">
+        <div class="transcript-msg system">Tizim tayyor. Ulanish kalitini kiriting va gapirish uchun tugmani bosing.</div>
+      </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <section class="control-section">
+      <button id="ptt-btn" class="ptt-button" disabled>
+        <span class="ptt-icon">🎙️</span>
+        <span class="ptt-text">Bosing va ushlab turing</span>
+      </button>
+
+      <div class="action-row">
+        <button id="stop-btn" class="btn btn-danger">STOP (To'xtatish)</button>
+        <button id="resume-btn" class="btn btn-primary" style="display: none;">Davom ettirish</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
