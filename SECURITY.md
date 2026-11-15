@@ -61,3 +61,12 @@ Security is enforced in **backend code and operating system boundaries, never in
   - System hotkey: `Super + Shift + Escape`
   - Mobile UI: PWA STOP button
 - Triggering the kill switch immediately halts all action dispatch, invalidates pending confirmation tokens, terminates active subprocess process groups, drops the audio session, and logs the emergency halt.
+
+---
+
+## 8. Threat Model & Vulnerability Reporting
+
+- Complete formal threat model: see [docs/threat-model.md](docs/threat-model.md).
+- To report potential security vulnerabilities, please contact the project owner directly (Azimjon). Never open public issues containing suspected exploit payloads or secrets.
+- Full 24-attack security red-team suite is automated in `tests/security/test_red_team.py` and runs continuously on every build.
+

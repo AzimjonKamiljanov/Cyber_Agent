@@ -90,4 +90,24 @@
 | **Calendar Description Taint** | 100.0% Tainted | **100.0%** | PASS |
 | **Red Team Attacks (Attacks 1–24)** | 100% Blocked | **24/24 Blocked** | PASS |
 
+---
+
+## 7. Honest Known Limitations & Engineering Trade-Offs
+
+In accordance with Cyber Agent's Constitution (honesty and zero faking), the following known limitations are documented:
+
+1. **Wayland Display Server Isolation:**
+   - Under GNOME 50 Wayland, the compositor restricts arbitrary processes from inspecting other windows' framebuffers or injecting global synthetic input. Cyber Agent relies on the AT-SPI accessibility bus and XDG desktop portals. Certain legacy or custom non-standard GUI toolkits (e.g., custom OpenGL canvas windows without accessibility hooks) do not expose an AT-SPI tree and cannot be automated.
+2. **Push-to-Talk vs Always-On Hotword:**
+   - Always-on wake-word processing was deliberately not enabled by default to prevent ambient eavesdropping, conserve laptop battery, and save RTX 5070 compute resources when idle. Voice interactions require client-side Push-to-Talk activation via the PWA or keyboard shortcut.
+3. **Audio-to-Audio Latency Sensitivity (Mode A):**
+   - Mode A (Gemini 3.8 Live WebSocket) relies on active cloud connectivity. Under unstable network conditions or high packet loss, round-trip audio latency can degrade above 2.0 seconds. The router automatically falls back to local Mode C if network disconnection occurs.
+4. **Local Synthesis Latency (Mode C):**
+   - Running complete local inference (faster-whisper medium + Ollama Qwen 7B Q4 + local TTS) on the RTX 5070 achieves P50 latency of ~2.48 s. While responsive, it cannot match the near-instantaneous streaming audio cadence of cloud Mode A.
+5. **Google Calendar Initial OAuth Grant:**
+   - Google Calendar integration requires a one-time human browser authorization step via OAuth consent screen to obtain the initial refresh token. No automated secret extraction can bypass this requirement.
+6. **Optional Extension Blocks:**
+   - Per Stage S6 instructions, optional extension blocks (`ENABLE S6-PHONE` and `ENABLE S6-CLOUD`) were skipped because the user approval prompt did not include these specific authorization flags.
+
+
 
