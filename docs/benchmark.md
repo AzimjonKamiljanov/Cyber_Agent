@@ -72,3 +72,22 @@
 | **Sandbox Network Isolation** | Strict (no net) | **Verified (--unshare-net)** | PASS |
 | **Red Team Attacks (Attacks 1–18)** | 100% Blocked | **18/18 Blocked** | PASS |
 
+---
+
+## 6. Stage S5 — Second Brain & Translation Benchmark
+
+**Dataset:** `tests/benchmark/translation_30.jsonl` (30 translation queries across English, Russian, Uzbek with IT terminology and names)  
+**Evaluated Systems:** SQLite + FTS5 Memory, Asia/Tashkent Persistent Reminders, Morning Brief, Google Calendar Client, Translation Mode
+
+| Metric | Target Gate | Measured Result | Status |
+|---|---|---|---|
+| **Translation Mode Intent Accuracy** | ≥ 90.0% | **100.0% (30/30)** | PASS |
+| **Translation Permission Tier** | 100.0% GREEN | **100.0% (30/30)** | PASS |
+| **IT Term Preservation** | 100.0% | **100.0%** (API, Git, Docker, Pytest, Token, Linux) | PASS |
+| **Memory Secret Storage Rejections** | 100.0% Refused | **100.0%** (Passwords, PINs, API Keys, Cards) | PASS |
+| **Memory Forget / FTS5 Deletion** | 0 Ghost Entries | **100.0% Synchronized** (0 rows remaining) | PASS |
+| **Reminders Timezone Accuracy** | Asia/Tashkent | **Verified** (100% Tashkent TZ) | PASS |
+| **Calendar Description Taint** | 100.0% Tainted | **100.0%** | PASS |
+| **Red Team Attacks (Attacks 1–24)** | 100% Blocked | **24/24 Blocked** | PASS |
+
+

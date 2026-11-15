@@ -116,6 +116,66 @@ class RunAllowedCommandArgs(MutatingToolArgs):
     argv: list[str] = Field(..., min_length=1, description="Command arguments array (argv)")
 
 
+# Stage S5: Memory, Reminders, Calendar, Translation schemas
+
+
+class MemoryRememberArgs(MutatingToolArgs):
+    text: str = Field(..., min_length=1, max_length=2000, description="Matn yoki eslab qolish kerak bo'lgan ma'lumot")
+    consent: bool = Field(default=True, description="Foydalanuvchi roziligi mavjudligi")
+
+
+class MemoryRecallArgs(BaseToolArgs):
+    query: str = Field(..., min_length=1, description="Xotiradan qidirilayotgan kalit so'z yoki savol")
+    limit: int = Field(default=5, ge=1, le=20, description="Maksimal natijalar soni")
+
+
+class MemoryListArgs(BaseToolArgs):
+    limit: int = Field(default=20, ge=1, le=50, description="Ko'rsatiladigan so'nggi xotiralar soni")
+
+
+class MemoryForgetArgs(MutatingToolArgs):
+    target: str = Field(..., min_length=1, description="O'chirilishi kerak bo'lgan xotira matni yoki ID raqami")
+
+
+class MemoryWipeArgs(MutatingToolArgs):
+    confirm: bool = Field(default=True, description="Barcha xotirani to'liq o'chirishga qat'iy rozilik")
+
+
+class CreateReminderArgs(MutatingToolArgs):
+    title: str = Field(..., min_length=1, max_length=500, description="Eslatma matni yoki sarlavhasi")
+    remind_at: str = Field(..., description="Eslatish vaqti (ISO format yoki '10 daqiqadan keyin')")
+    channel: str = Field(default="all", description="'desktop', 'pwa', yoki 'all'")
+
+
+class ListRemindersArgs(BaseToolArgs):
+    include_completed: bool = Field(default=False, description="Bajarilgan eslatmalarni ham ko'rsatish")
+
+
+class CancelReminderArgs(MutatingToolArgs):
+    reminder_id: str = Field(..., description="Bekor qilinadigan eslatma ID si")
+
+
+class GetMorningBriefArgs(BaseToolArgs):
+    date: str | None = Field(default=None, description="Xulosa sanasi (ixtiyoriy, standart: bugun)")
+
+
+class GetCalendarEventsArgs(BaseToolArgs):
+    days: int = Field(default=1, ge=1, le=30, description="Necha kunlik voqealarni olish")
+    max_results: int = Field(default=10, ge=1, le=50, description="Maksimal voqealar soni")
+
+
+class CreateCalendarEventArgs(MutatingToolArgs):
+    title: str = Field(..., min_length=1, description="Tadbir nomi")
+    start_time: str = Field(..., description="Boshlanish vaqti (ISO 8601)")
+    end_time: str = Field(..., description="Tugash vaqti (ISO 8601)")
+    description: str = Field(default="", description="Tadbir tavsifi")
+
+
+class TranslateModeArgs(BaseToolArgs):
+    target_language: str = Field(default="en", description="'en', 'ru', yoki 'uz'")
+    text: str = Field(default="", description="Tarjima qilinadigan matn")
+
+
 class ToolResult(BaseModel):
     success: bool
     output: str

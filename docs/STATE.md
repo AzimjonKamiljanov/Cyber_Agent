@@ -5,10 +5,10 @@ Live tracking of active stages, decisions, and system verification status.
 ---
 
 ## Current Status
-- **Current Stage:** Stage S4 — Laptop Control (Wayland, Dual Monitor, Isolated Browser, Sandbox)
-- **Status:** Completed (Gate G4 Ready for Approval)
-- **Active Branch:** `stage/s4-laptop-control`
-- **Next Gate:** Gate G4 (Desktop probe, decision 0005, 5 desktop tools, isolated browser, bwrap sandbox, 18 red team tests pass)
+- **Current Stage:** Stage S5 — Second Brain & Calendar (Memory SQLite FTS5, Reminders, Morning Brief, Calendar, Translator)
+- **Status:** Completed (Gate G5 Ready for Approval)
+- **Active Branch:** `stage/s5-second-brain`
+- **Next Gate:** Gate G5 (119 tests pass, 24 red team attacks pass, memory forget/wipe verified, translation benchmark)
 
 ---
 
@@ -19,8 +19,8 @@ Live tracking of active stages, decisions, and system verification status.
 | **S1** | Voice Core | Completed | Passed G1 | `docs/reports/stage-1-report.uz.md` |
 | **S2** | Safety Kernel & Tools v1 (MVP) | Completed | Passed G2 (Merged to main) | `docs/reports/stage-2-report.uz.md` |
 | **S3** | Local Brain & Uzbek Voice | Completed | Passed G3 (Merged to main) | `docs/reports/stage-3-report.uz.md` |
-| **S4** | Laptop Control (Wayland) | Completed | Passed G4 (97 tests pass) | `docs/reports/stage-4-report.uz.md` |
-| **S5** | Second Brain & Calendar | Planned | Pending G5 | — |
+| **S4** | Laptop Control (Wayland) | Completed | Passed G4 (Merged to main) | `docs/reports/stage-4-report.uz.md` |
+| **S5** | Second Brain & Calendar | Completed | Passed G5 (119 tests pass) | `docs/reports/stage-5-report.uz.md` |
 | **S6** | Hardening & v1.0 Release | Planned | Pending G6 | — |
 
 ---
@@ -46,6 +46,9 @@ Live tracking of active stages, decisions, and system verification status.
 ---
 
 ## Open Issues / Pending User Tests
-- [USER-TEST-REQUIRED] 5-minute terminal test via `uv run python scripts/live_terminal_test.py`.
+- [USER-TEST-REQUIRED] Google Calendar OAuth consent steps (`docs/setup-google.md`).
+- [USER-TEST-REQUIRED] Memory voice test: say "Buni eslab qol ..." then "Nimani eslaysan?" then "Buni unut".
+- [USER-TEST-REQUIRED] Reminders persistence test: set reminder, restart, check delivery.
+- [USER-TEST-REQUIRED] Run `scripts/manual/08-install-timer.sh` to install cyber-morning systemd user timer.
+- [USER-TEST-REQUIRED] Voice translation test: activate "Tarjimon rejimi", speak 10 sentences and rate.
 - [USER-TEST-REQUIRED] Mobile test with Poco F6 Pro + Huawei FreeArc earbuds over Tailscale Serve.
-- [USER-TEST-REQUIRED] GNOME desktop input verification: run `scripts/manual/07-desktop-control-setup.sh` and test live input injection.

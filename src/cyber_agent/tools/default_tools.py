@@ -1,14 +1,19 @@
 """Registration of all S2 default safe tools."""
 
+from cyber_agent.brain.translator import register_translation_tools
 from cyber_agent.policy.permissions import PolicyTier
 from cyber_agent.tools.browser.tools import register_browser_tools
+from cyber_agent.tools.calendar_tools import register_calendar_tools
 from cyber_agent.tools.desktop.tools import register_desktop_tools
 from cyber_agent.tools.draft_message import handle_draft_message
 from cyber_agent.tools.get_local_time import handle_get_local_time
 from cyber_agent.tools.get_system_status import handle_get_system_status
+from cyber_agent.tools.memory.tools import register_memory_tools
+from cyber_agent.tools.morning_brief import register_morning_brief_tools
 from cyber_agent.tools.move_workspace_file import handle_move_workspace_file
 from cyber_agent.tools.open_allowed_app import handle_open_allowed_app
 from cyber_agent.tools.registry import ToolDefinition, ToolRegistry, get_tool_registry
+from cyber_agent.tools.reminders import register_reminder_tools
 from cyber_agent.tools.run_allowed_command import handle_run_allowed_command
 from cyber_agent.tools.run_test_suite import handle_run_test_suite
 from cyber_agent.tools.schemas import (
@@ -173,5 +178,20 @@ def register_default_tools(registry: ToolRegistry | None = None) -> ToolRegistry
 
     # Register Browser tools (browser_open, browser_read, browser_submit_form)
     register_browser_tools(reg)
+
+    # Register Memory tools (memory_remember, memory_recall, memory_list, memory_forget, memory_wipe)
+    register_memory_tools(reg)
+
+    # Register Reminder tools (create_reminder, list_reminders, cancel_reminder)
+    register_reminder_tools(reg)
+
+    # Register Morning Brief tool (get_morning_brief)
+    register_morning_brief_tools(reg)
+
+    # Register Google Calendar tools (get_calendar_events, create_calendar_event)
+    register_calendar_tools(reg)
+
+    # Register Translation Mode tool (translate_mode)
+    register_translation_tools(reg)
 
     return reg

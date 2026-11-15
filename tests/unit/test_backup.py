@@ -28,6 +28,7 @@ def test_backup_and_restore_cycle(tmp_path: Path) -> None:
 
     # Normal files
     (data_dir / "audit.jsonl").write_text('{"event": "test"}\n', encoding="utf-8")
+    (data_dir / "memory.sqlite3").write_text("SQLITE_HEADER_DUMMY_DATA", encoding="utf-8")
     (config_dir / "settings.toml").write_text('[app]\nname = "cyber"\n', encoding="utf-8")
 
     # Sensitive files that MUST be excluded
@@ -44,6 +45,7 @@ def test_backup_and_restore_cycle(tmp_path: Path) -> None:
     with tarfile.open(archive, "r:gz") as tar:
         names = tar.getnames()
         assert "data/audit.jsonl" in names
+        assert "data/memory.sqlite3" in names
         assert "config/settings.toml" in names
         # Invariant: NEVER include secrets or sockets
         for n in names:
@@ -58,5 +60,6 @@ def test_backup_and_restore_cycle(tmp_path: Path) -> None:
     success = restore_backup(archive, target_root=restore_target)
     assert success is True
     assert (restore_target / "data" / "audit.jsonl").exists()
+    assert (restore_target / "data" / "memory.sqlite3").exists()
     assert (restore_target / "config" / "settings.toml").exists()
-    assert (restore_target / "data" / "audit.jsonl").read_text() == '{"event": "test"}\n'
+    assert (restore_target / "data" / "memory.sqlite3").read_text() == "SQLITE_HEADER_DUMMY_DATA"

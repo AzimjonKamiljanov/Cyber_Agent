@@ -1,0 +1,9 @@
+[Unit]
+Description=Run Cyber Agent Morning Brief Daily at 08:00 Tashkent Time
+
+[Timer]
+OnCalendar=*-*-* 08:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

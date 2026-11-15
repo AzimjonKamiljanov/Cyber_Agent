@@ -1,0 +1,11 @@
+[Unit]
+Description=Cyber Agent Morning Brief Generator
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/cyber/Cyber_Agent
+ExecStart=/home/cyber/.local/bin/uv run python -c "import asyncio; from cyber_agent.memory.morning_brief import generate_morning_brief; asyncio.run(generate_morning_brief())"
+
+[Install]
+WantedBy=default.target
